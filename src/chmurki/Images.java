@@ -2,49 +2,61 @@ package chmurki;
 
 import javax.swing.ImageIcon;
 import java.awt.Image;
+import javax.imageio.ImageIO;
 
 /**
- *klasa zawierajaca wszystkie obrazki
+ * class containing all images
+ *
  * @author Michal
  */
-public class Obrazki {
-    public Image       tlo1;
-    public Image       tlo2;
-    public Image       tlo3;
-    public Image       tlo_uzyte;
-    public Image       pauza_chmura;
-    public Image       chmurka1;
-    public Image       chmurka2;
-    public Image       chmurka3;
-    public Image       chmurka_uzyta;
-    public Image       wiatrak;
-    public Image       prog;
-    public Image       pasek;
-    public Image       menu;
-/**
- * konstruktor wczytujacy obrazki
- */
-    public  Obrazki(){
-        tlo1            = new ImageIcon("materialy/tlo1.png").getImage();
-        menu            = new ImageIcon("materialy/menu.png").getImage();
-        tlo2            = new ImageIcon("materialy/tlo2.png").getImage();
-        tlo3            = new ImageIcon("materialy/tlo3.png").getImage();
-        wiatrak         = new ImageIcon("materialy/wiatrak.png").getImage();
-        prog            = new ImageIcon("materialy/prog.png").getImage();
-        pasek           = new ImageIcon("materialy/pasek.png").getImage();
-        chmurka1        = new ImageIcon("materialy/chmurka1.png").getImage();
-        chmurka2        = new ImageIcon("materialy/chmurka2.png").getImage();
-        chmurka3        = new ImageIcon("materialy/chmurka3.png").getImage();
-        pauza_chmura    = new ImageIcon("materialy/pauza.png").getImage();
+public class Images {
+
+    public Image background1;
+    public Image backgroud2;
+    public Image background3;
+    public Image usedBackgroundImage;
+    public Image cloudOnPause;
+    public Image cloud1;
+    public Image cloud2;
+    public Image cloud3;
+    public Image usedCloud;
+    public Image windmill;
+    public Image spinePipe;
+    public Image label;
+    public Image menu;
+
+    /**
+     * konstruktor wczytujacy obrazki
+     */
+    public Images() {
+        try {
+            background1 = ImageIO.read(Images.class.getResource("/materialy/tlo1.png"));
+            menu = ImageIO.read(Images.class.getResource("/materialy/menu.png"));
+            backgroud2 = ImageIO.read(Images.class.getResource("/materialy/tlo2.png"));
+            background3 = ImageIO.read(Images.class.getResource("/materialy/tlo3.png"));
+            windmill = ImageIO.read(Images.class.getResource("/materialy/wiatrak.png"));
+            spinePipe = ImageIO.read(Images.class.getResource("/materialy/prog.png"));
+            label = ImageIO.read(Images.class.getResource("/materialy/pasek.png"));
+            cloud1 = ImageIO.read(Images.class.getResource("/materialy/chmurka1.png"));
+            cloud2 = ImageIO.read(Images.class.getResource("/materialy/chmurka2.png"));
+            cloud3 = ImageIO.read(Images.class.getResource("/materialy/chmurka3.png"));
+            cloudOnPause = ImageIO.read(Images.class.getResource("/materialy/pauza.png"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    public void setBackgroundForLevel(int level)
-    {
-        switch (level)
-        {
-            case 1: tlo_uzyte = tlo1;
-            case 2: tlo_uzyte = tlo2;
-            case 3: tlo_uzyte = tlo3;
-                default: tlo_uzyte = tlo1 ;
-        } 
+
+    public void setBackgroundForLevel(int level) {
+        switch (level) {
+            case 1:
+                usedBackgroundImage = background1;
+            case 2:
+                usedBackgroundImage = backgroud2;
+            case 3:
+                usedBackgroundImage = background3;
+            default:
+                usedBackgroundImage = background1;
+        }
     }
-}//koniec klasy Obrazki
+}

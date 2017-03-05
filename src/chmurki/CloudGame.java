@@ -1,6 +1,5 @@
-
-
 package chmurki;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -12,261 +11,313 @@ import java.util.TimerTask;
 import javax.swing.JFrame;
 
 /**
- * Główna klasa
+ * Main class
+ *
  * @author Michal
  * @version 1.00
  */
+public class CloudGame extends JFrame {
 
+    Images images = new Images();
+    private Timer timer;
+    GameData gameData = new GameData();
+    Saver saver = new Saver();
+    MusicPlayer musicPlayer = new MusicPlayer();
+    Cloud cloud = new Cloud();
 
-public class Chmurki extends JFrame{
-   
-    
-    private Timer zegar;
-    DaneGry daneGry = new DaneGry();
-    Zapis zapis= new Zapis();
-    Odtwarzacz odtwarzacz = new Odtwarzacz();
-    Chmurka chmurka= new Chmurka();
-    Obrazki obrazki = new Obrazki();
-    
-    
+    class Task extends TimerTask {
 
+        public void updateClickingTime() {
+            if (gameData.countedClicks != 0) {
+                gameData.clickingTime = gameData.clickingTime + (gameData.currentTime - gameData.lastClickingTime);
+                gameData.lastClickingTime = gameData.currentTime;
+            } else {
+                gameData.lastClickingTime = gameData.currentTime;
+            }
 
-    /**
-     * klasa odpowiedzialna za odejmowanie punktow i opadanie chmurki 
-     * przy zlym dmuchaniu badz nie dmuchaniu ,
-     * losowanie nowej chmurki przy zniszczeniu poprzedniej,
-     * zliczanie czasu gry i rozgrywki,
-     * zakonczenie gry przy opadnieciu chmurki
-     * uruchamiany co 20 ms 
-     */
-    class Zadanie extends TimerTask{
-        public void run(){
-            
-            if(daneGry.whilePlay()){
-                
-                daneGry.fallingPanalty();
-                
-                if(daneGry.checkRightClickingSpeed(chmurka.getPositionY(), chmurka.getCloudType()))
-                    chmurka.increasePosY();
-                else
-                    chmurka.decreasePosY();
-                
+        }
+
+        public void updatePlayTime() {
+
+            if (gameData.whilePlay()) {
+                gameData.playTime = gameData.playTime + (gameData.currentTime - gameData.lastPlayTime);
+                gameData.lastPlayTime = gameData.currentTime;
+            } else {
+                gameData.lastPlayTime = gameData.currentTime;
             }
-        daneGry.gameOver(chmurka.getPositionY());
-            
-        if(daneGry.poziom==3){                
-            obrazki.setBackgroundForLevel(daneGry.poziom); 
-            if(daneGry.zniszczone_chmurki>=60){
-                daneGry.zakoncz=true;
-                daneGry.pauza=true;
-            }
-                
-            if(chmurka.getPositionY()<150){
-                odtwarzacz.odtworz(2);
-                chmurka.setTypeOfCloud(daneGry.poziom);
-                
-                if(chmurka.getCloudType()==1)
-                    obrazki.chmurka_uzyta=obrazki.chmurka1;
-                else
-                    obrazki.chmurka_uzyta=obrazki.chmurka2;
-                
-                daneGry.zniszczone_chmurki++;
-                daneGry.punkty=daneGry.punkty+20;
-                chmurka.setNewHighForLevel(daneGry.poziom);
+
+        }
+
+        public void updateCountedClicks() {
+            if (gameData.currentTime > gameData.nextHalfSecond) {
+                gameData.nextHalfSecond += 500;
+                gameData.countedClicks = gameData.currentClickingTime;
+                gameData.currentClickingTime = 0;
             }
         }
-            
-        if(daneGry.poziom==2){                
-             
-             obrazki.setBackgroundForLevel(daneGry.poziom);
-               
-            if(daneGry.zniszczone_chmurki>=30){
-                daneGry.poziom++;                                   
-                chmurka.setTypeOfCloud(3);
-                obrazki.chmurka_uzyta=obrazki.chmurka3;
+
+        public void run() {
+
+            if (gameData.whilePlay()) {
+
+                gameData.fallingPanalty();
+
+                if (gameData.checkRightClickingSpeed(cloud.getPositionY(), cloud.getCloudType())) {
+                    cloud.increasePosY();
+                } else {
+                    cloud.decreasePosY();
+                }
+
             }
-                
-            if(chmurka.getPositionY()<150){ 
-                odtwarzacz.odtworz(2);                   
-                chmurka.setTypeOfCloud(daneGry.poziom);                    
-                if(chmurka.getCloudType()==1)                        
-                    obrazki.chmurka_uzyta=obrazki.chmurka1;                    
-                else                        
-                    obrazki.chmurka_uzyta=obrazki.chmurka2;
-                    
-                daneGry.zniszczone_chmurki++;
-                daneGry.punkty=daneGry.punkty+15;
-                chmurka.setNewHighForLevel(daneGry.poziom);
+            gameData.gameOver(cloud.getPositionY());
+
+            if (gameData.level == 3) {
+                images.setBackgroundForLevel(gameData.level);
+                gameData.checkIfWinGame();
+
+                if (cloud.getPositionY() < 150) {
+                    musicPlayer.playSound(2);
+                    cloud.setTypeOfCloud(gameData.level);
+
+                    if (cloud.getCloudType() == 1) {
+                        images.usedCloud = images.cloud1;
+                    } else {
+                        images.usedCloud = images.cloud2;
+                    }
+
+                    gameData.destroyedClouds++;
+                    gameData.points = gameData.points + 20;
+                    cloud.setNewHighForLevel(gameData.level);
+                }
             }
-        }
-            
-        if(daneGry.poziom==1){
-            chmurka.setTypeOfCloud(1); 
-             obrazki.setBackgroundForLevel(daneGry.poziom);
-            obrazki.chmurka_uzyta=obrazki.chmurka1;
-            if(daneGry.zniszczone_chmurki>=10){
-                daneGry.poziom++;
-                chmurka.setTypeOfCloud(2); 
-                obrazki.chmurka_uzyta=obrazki.chmurka2;
+
+            if (gameData.level == 2) {
+
+                images.setBackgroundForLevel(gameData.level);
+
+                if (gameData.destroyedClouds >= 30) {
+                    gameData.level++;
+                    cloud.setTypeOfCloud(3);
+                    images.usedCloud = images.cloud3;
+                }
+
+                if (cloud.getPositionY() < 150) {
+                    musicPlayer.playSound(2);
+                    cloud.setTypeOfCloud(gameData.level);
+                    if (cloud.getCloudType() == 1) {
+                        images.usedCloud = images.cloud1;
+                    } else {
+                        images.usedCloud = images.cloud2;
+                    }
+
+                    gameData.destroyedClouds++;
+                    gameData.points = gameData.points + 15;
+                    cloud.setNewHighForLevel(gameData.level);
+                }
             }
-                
-            if(chmurka.getPositionY()<150){
-                odtwarzacz.odtworz(2);
-                daneGry.zniszczone_chmurki++;
-                daneGry.punkty=daneGry.punkty+10;
-                chmurka.setNewHighForLevel(daneGry.poziom);
+
+            if (gameData.level == 1) {
+                cloud.setTypeOfCloud(1);
+                images.setBackgroundForLevel(gameData.level);
+                images.usedCloud = images.cloud1;
+                if (gameData.destroyedClouds >= 10) {
+                    gameData.level++;
+                    cloud.setTypeOfCloud(2);
+                    images.usedCloud = images.cloud2;
+                }
+
+                if (cloud.getPositionY() < 150) {
+                    musicPlayer.playSound(2);
+                    gameData.destroyedClouds++;
+                    gameData.points = gameData.points + 10;
+                    cloud.setNewHighForLevel(gameData.level);
+                }
             }
+
+            gameData.currentTime = System.currentTimeMillis();
+            updateClickingTime();
+
+            updatePlayTime();
+            updateCountedClicks();
+            repaint();
         }
-        
-        
-        daneGry.obecny_czas = System.currentTimeMillis();
-        if(daneGry.klikniecia_po_czasie!=0){
-            daneGry.czas_dmuchania=daneGry.czas_dmuchania+(daneGry.obecny_czas-daneGry.ostatnie_dmuchanie);
-            daneGry.ostatnie_dmuchanie=daneGry.obecny_czas;
-        }
-        else
-            daneGry.ostatnie_dmuchanie=daneGry.obecny_czas;
-        
-        if(daneGry.whilePlay()){
-            daneGry.czas_gry=daneGry.czas_gry+(daneGry.obecny_czas-daneGry.ostatni_czas);
-            daneGry.ostatni_czas=daneGry.obecny_czas;
-        }
-        else
-            daneGry.ostatni_czas=daneGry.obecny_czas;
-        
-        if (daneGry.obecny_czas > daneGry.nastepna_sekunda){
-            daneGry.nastepna_sekunda += 500;
-            daneGry.klikniecia_po_czasie=daneGry.klikniecia;
-            daneGry.klikniecia=0;
-        }
-        repaint();
-        }
-    }//koniec klasy Zadanie
-    
-    Chmurki(){
+    }
+
+    CloudGame() {
         super("CHMURKI");
-        setBounds(50,50,1024,768);
+        setBounds(50, 50, 1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setVisible(true);
         createBufferStrategy(2);
 
-        zegar = new Timer();
-        zegar.scheduleAtFixedRate(new Zadanie(),0,20);
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new Task(), 0, 20);
 
         /**
-         * zczytuje dane z klawiatury podczas wyswietalania imienia
+         * Keylistener only active on saving score page
          */
-        this.addKeyListener(new KeyListener(){
+        this.addKeyListener(new KeyListener() {
 
-            public void keyPressed(KeyEvent e){
-                if(daneGry.zakoncz==true & daneGry.zapiszwynik==true) 
-                switch(e.getKeyCode()){
-                    case KeyEvent.VK_Q:   zapis.imie=zapis.imie+"Q"; break;
-                    case KeyEvent.VK_W:   zapis.imie=zapis.imie+"W"; break;
-                    case KeyEvent.VK_E:   zapis.imie=zapis.imie+"E"; break;
-                    case KeyEvent.VK_R:   zapis.imie=zapis.imie+"R"; break;
-                    case KeyEvent.VK_T:   zapis.imie=zapis.imie+"T"; break;
-                    case KeyEvent.VK_Y:   zapis.imie=zapis.imie+"Y"; break;
-                    case KeyEvent.VK_U:   zapis.imie=zapis.imie+"U"; break;
-                    case KeyEvent.VK_I:   zapis.imie=zapis.imie+"I"; break;
-                    case KeyEvent.VK_O:   zapis.imie=zapis.imie+"O"; break;
-                    case KeyEvent.VK_P:   zapis.imie=zapis.imie+"P"; break;
-                    case KeyEvent.VK_A:   zapis.imie=zapis.imie+"A"; break;
-                    case KeyEvent.VK_S:   zapis.imie=zapis.imie+"S"; break;
-                    case KeyEvent.VK_D:   zapis.imie=zapis.imie+"D"; break;
-                    case KeyEvent.VK_F:   zapis.imie=zapis.imie+"F"; break;
-                    case KeyEvent.VK_G:   zapis.imie=zapis.imie+"G"; break;
-                    case KeyEvent.VK_H:   zapis.imie=zapis.imie+"H"; break;
-                    case KeyEvent.VK_J:   zapis.imie=zapis.imie+"J"; break;
-                    case KeyEvent.VK_K:   zapis.imie=zapis.imie+"K"; break;
-                    case KeyEvent.VK_L:   zapis.imie=zapis.imie+"L"; break;
-                    case KeyEvent.VK_Z:   zapis.imie=zapis.imie+"Z"; break;
-                    case KeyEvent.VK_X:   zapis.imie=zapis.imie+"X"; break;
-                    case KeyEvent.VK_C:   zapis.imie=zapis.imie+"C"; break;
-                    case KeyEvent.VK_V:   zapis.imie=zapis.imie+"V"; break;
-                    case KeyEvent.VK_B:   zapis.imie=zapis.imie+"B"; break;
-                    case KeyEvent.VK_N:   zapis.imie=zapis.imie+"N"; break;
-                    case KeyEvent.VK_M:   zapis.imie=zapis.imie+"M"; break;
-                    case KeyEvent.VK_ENTER:     daneGry.zapiszwynik=false;
-                                                zapis.zapiszWynik();
-                                                zapis.domyslne();
-                                                odtwarzacz.odtworz(1);
-                                                break;
-                    case KeyEvent.VK_BACK_SPACE:   if(zapis.imie.length()>0) zapis.imie=zapis.imie.substring(0, zapis.imie.length() - 1); break;
+            public void keyPressed(KeyEvent e) {
+                if (gameData.endGame == true & gameData.saveScore == true) {
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_Q:
+                            saver.name = saver.name + "Q";
+                            break;
+                        case KeyEvent.VK_W:
+                            saver.name = saver.name + "W";
+                            break;
+                        case KeyEvent.VK_E:
+                            saver.name = saver.name + "E";
+                            break;
+                        case KeyEvent.VK_R:
+                            saver.name = saver.name + "R";
+                            break;
+                        case KeyEvent.VK_T:
+                            saver.name = saver.name + "T";
+                            break;
+                        case KeyEvent.VK_Y:
+                            saver.name = saver.name + "Y";
+                            break;
+                        case KeyEvent.VK_U:
+                            saver.name = saver.name + "U";
+                            break;
+                        case KeyEvent.VK_I:
+                            saver.name = saver.name + "I";
+                            break;
+                        case KeyEvent.VK_O:
+                            saver.name = saver.name + "O";
+                            break;
+                        case KeyEvent.VK_P:
+                            saver.name = saver.name + "P";
+                            break;
+                        case KeyEvent.VK_A:
+                            saver.name = saver.name + "A";
+                            break;
+                        case KeyEvent.VK_S:
+                            saver.name = saver.name + "S";
+                            break;
+                        case KeyEvent.VK_D:
+                            saver.name = saver.name + "D";
+                            break;
+                        case KeyEvent.VK_F:
+                            saver.name = saver.name + "F";
+                            break;
+                        case KeyEvent.VK_G:
+                            saver.name = saver.name + "G";
+                            break;
+                        case KeyEvent.VK_H:
+                            saver.name = saver.name + "H";
+                            break;
+                        case KeyEvent.VK_J:
+                            saver.name = saver.name + "J";
+                            break;
+                        case KeyEvent.VK_K:
+                            saver.name = saver.name + "K";
+                            break;
+                        case KeyEvent.VK_L:
+                            saver.name = saver.name + "L";
+                            break;
+                        case KeyEvent.VK_Z:
+                            saver.name = saver.name + "Z";
+                            break;
+                        case KeyEvent.VK_X:
+                            saver.name = saver.name + "X";
+                            break;
+                        case KeyEvent.VK_C:
+                            saver.name = saver.name + "C";
+                            break;
+                        case KeyEvent.VK_V:
+                            saver.name = saver.name + "V";
+                            break;
+                        case KeyEvent.VK_B:
+                            saver.name = saver.name + "B";
+                            break;
+                        case KeyEvent.VK_N:
+                            saver.name = saver.name + "N";
+                            break;
+                        case KeyEvent.VK_M:
+                            saver.name = saver.name + "M";
+                            break;
+                        case KeyEvent.VK_ENTER:
+                            gameData.saveScore = false;
+                            saver.saveScore();
+                            saver.setDefoultGameData();
+                            musicPlayer.playSound(1);
+                            break;
+                        case KeyEvent.VK_BACK_SPACE:
+                            if (saver.name.length() > 0) {
+                                saver.name = saver.name.substring(0, saver.name.length() - 1);
+                            }
+                            break;
+                    }
                 }
             }
 
-            public void keyReleased(KeyEvent e){
+            public void keyReleased(KeyEvent e) {
             }
 
-            public void keyTyped(KeyEvent e){
+            public void keyTyped(KeyEvent e) {
             }
         }
-    );
-        /**
-         * sczytuje miejsca, w ktorych został wcisniety lewy przycisk myszy
-         */
-        this.addMouseListener(new MouseListener(){
+        );
+
+        this.addMouseListener(new MouseListener() {
 
             public void mouseClicked(MouseEvent e) {
             }
 
             public void mousePressed(MouseEvent e) {
                 //zliczanie klikniec, gdy nie ma pauzy i gdy gra nie zostala skocznona
-                if(daneGry.whilePlay())
-                daneGry.klikniecia++;
-                //wlaczenie pauzy
-                if(e.getX()<880 & e.getX()>770 & e.getY()>35 & e.getY()<85 & daneGry.whilePlay())
-                {  
-                    daneGry.klikniecia--;
-                    daneGry.pauza=true;
-                    odtwarzacz.odtworz(1);
+                if (gameData.whilePlay()) {
+                    gameData.currentClickingTime++;
                 }
-                
+                //wlaczenie pauzy
+                if (e.getX() < 880 & e.getX() > 770 & e.getY() > 35 & e.getY() < 85 & gameData.whilePlay()) {
+                    gameData.currentClickingTime--;
+                    gameData.pause = true;
+                    musicPlayer.playSound(1);
+                }
+
                 //wznowienie gry
-                if(e.getX()<580 & e.getX()>400 & e.getY()>200 & e.getY()<260 & daneGry.zakoncz==false & daneGry.pauza==true){
-                    daneGry.pauza=false;
-                    odtwarzacz.odtworz(1);
+                if (e.getX() < 580 & e.getX() > 400 & e.getY() > 200 & e.getY() < 260 & gameData.endGame == false & gameData.pause == true) {
+                    gameData.pause = false;
+                    musicPlayer.playSound(1);
                 }
                 //pokazanie menu zapisu
-                if(e.getX()<570 & e.getX()>260 & e.getY()>390 & e.getY()<432 & daneGry.zakoncz==true ){
-                    daneGry.zapiszwynik=true;
-                    zapis.wpisanieDanych(daneGry.punkty,daneGry.czas_gry,daneGry.czas_dmuchania);
-                    odtwarzacz.odtworz(1);
-                }
-                else
-                //zapisanie wyniku
-                if(e.getX()<510 & e.getX()>350 & e.getY()>465 & e.getY()<510 & daneGry.zakoncz==true & daneGry.zapiszwynik==true){
-                    daneGry.zapiszwynik=false;
-                    zapis.zapiszWynik();
-                    zapis.domyslne();
-                    odtwarzacz.odtworz(1);
-                }
-                else
-                //wylaczenie programu
-                if(e.getX()<447 & e.getX()>299 & e.getY()>470 & e.getY()<510 & daneGry.zakoncz==true & daneGry.zapiszwynik==false)
+                if (e.getX() < 570 & e.getX() > 260 & e.getY() > 390 & e.getY() < 432 & gameData.endGame == true) {
+                    gameData.saveScore = true;
+                    saver.setGameData(gameData.points, gameData.playTime, gameData.clickingTime);
+                    musicPlayer.playSound(1);
+                } else //zapisanie wyniku
+                if (e.getX() < 510 & e.getX() > 350 & e.getY() > 465 & e.getY() < 510 & gameData.endGame == true & gameData.saveScore == true) {
+                    gameData.saveScore = false;
+                    saver.saveScore();
+                    saver.setDefoultGameData();
+                    musicPlayer.playSound(1);
+                } else //wylaczenie programu
+                if (e.getX() < 447 & e.getX() > 299 & e.getY() > 470 & e.getY() < 510 & gameData.endGame == true & gameData.saveScore == false) {
                     System.exit(0);
-                else
-                //wlaczenie nowej gry
-                if((e.getX()<701 & e.getX()>476 & e.getY()>470 & e.getY()<510 & daneGry.zakoncz==true & daneGry.zapiszwynik==false)||(e.getX()<627 & e.getX()>403 & e.getY()>320 & e.getY()<360 & daneGry.pauza==true ) ){                    
-                    daneGry.czas_dmuchania=0;
-                    daneGry.czas_gry=0;
-                    daneGry.ostatni_czas=System.currentTimeMillis();
-                    daneGry.poziom =1;
-                    chmurka.setTypeOfCloud(1);
-                    daneGry.punkty =0;
-                    daneGry.zniszczone_chmurki=0;
-                    daneGry.zakoncz=false;
-                    daneGry.pauza=false;
-                    chmurka.setNewHighForLevel(daneGry.poziom);
-                    odtwarzacz.odtworz(1);
+                } else //wlaczenie nowej gry
+                if ((e.getX() < 701 & e.getX() > 476 & e.getY() > 470 & e.getY() < 510 & gameData.endGame == true & gameData.saveScore == false) || (e.getX() < 627 & e.getX() > 403 & e.getY() > 320 & e.getY() < 360 & gameData.pause == true)) {
+                    gameData.clickingTime = 0;
+                    gameData.playTime = 0;
+                    gameData.lastPlayTime = System.currentTimeMillis();
+                    gameData.level = 1;
+                    cloud.setTypeOfCloud(1);
+                    gameData.points = 0;
+                    gameData.destroyedClouds = 0;
+                    gameData.endGame = false;
+                    gameData.pause = false;
+                    cloud.setNewHighForLevel(gameData.level);
+                    musicPlayer.playSound(1);
                 }
-                
+
                 //zakonczenie gry
-                if(e.getX()<600 & e.getX()>400 & e.getY()>410 & e.getY()<460 & daneGry.pauza==true & daneGry.zakoncz==false){
-                    daneGry.zakoncz=true;
-                    odtwarzacz.odtworz(1);
+                if (e.getX() < 600 & e.getX() > 400 & e.getY() > 410 & e.getY() < 460 & gameData.pause == true & gameData.endGame == false) {
+                    gameData.endGame = true;
+                    musicPlayer.playSound(1);
                 }
             }
 
@@ -278,87 +329,75 @@ public class Chmurki extends JFrame{
 
             public void mouseExited(MouseEvent e) {
             }
-                }
+        }
         );
-}//koniec klasy Chmurki
-    
+    }
+
     /**
-     *
      * @param args
      */
-    public static void main(String[] args){
-        Chmurki okno = new Chmurki(); 
-        okno.repaint(); 
+    public static void main(String[] args) {
+        CloudGame okno = new CloudGame();
+        okno.repaint();
     }
-    
-    /**
-     * Metoda odpowiedzialna za rysowanie obiektow na ekranie zaleznie
-     * od parametrow boolean
-     * 
-     * @param g
-     */
-    public void paint(Graphics g){ 
-        try{
-        BufferStrategy bstrategy = this.getBufferStrategy();
-        Graphics2D g2d = (Graphics2D)bstrategy.getDrawGraphics();
-        
-        
-        
-        g2d.drawImage(obrazki.tlo_uzyte, 0,0,null);
-        g2d.drawImage(obrazki.wiatrak, 300,640,null);
-        g2d.drawImage(obrazki.prog, 0,140,null);
-        g2d.drawImage(obrazki.pasek, 0,0,null);
-        g2d.drawImage(obrazki.menu, 700,0,null);
-        g2d.setColor(Color.DARK_GRAY);
-        g2d.setFont(new Font("Arial",Font.BOLD,20));
-        
-        try{
-        g2d.drawString("Czas: "+daneGry.czas_gry/1000+"s" , 50, 55);
-        g2d.drawString("Czas dmuchania: "+daneGry.czas_dmuchania/1000+"s" , 200, 55);
-        g2d.drawString("Punkty: "+daneGry.punkty, 500, 55);
-        }
-        catch(Exception e)
-        {
-        g2d.drawString("Czas: "+0/1000+"s" , 50, 55);
-        g2d.drawString("Czas dmuchania: "+0/1000+"s" , 200, 55);
-        g2d.drawString("Punkty: "+0, 500, 55);
-        }
-        g2d.drawImage(obrazki.chmurka_uzyta, chmurka.getPositionX(),chmurka.getPositionY(),null);
-        
-        if (daneGry.pauza==true){
-            g2d.drawImage(obrazki.pauza_chmura, 150,100,null);
-            g2d.setFont(new Font("Arial",Font.BOLD,50));
-            g2d.drawString("Wznów" ,400, 256);
-            g2d.drawString("Nowa gra" , 400, 356);
-            g2d.drawString("Zakoncz" , 400, 456);
-        }
-        
-        if (daneGry.zakoncz==true){            
-            g2d.drawImage(obrazki.pauza_chmura, 50,100,null);
-            g2d.drawImage(obrazki.pauza_chmura, 250,100,null);
-            g2d.setFont(new Font("Arial",Font.BOLD,50));
-            g2d.drawString("Punkty: "+daneGry.punkty ,250, 220);
-            g2d.drawString("Czas dmuchania: "+daneGry.czas_dmuchania/1000+"s" , 250, 290);
-            g2d.drawString("Czas gry: "+daneGry.czas_gry/1000+"s" , 250, 360);
-            
-            if(daneGry.zapiszwynik==false){
-                g2d.drawString("Wyjdz  Nowa gra" , 300, 506);
-                g2d.drawString("Zapisz wynik " , 250, 430);
+
+    public void paint(Graphics g) {
+        try {
+            BufferStrategy bstrategy = this.getBufferStrategy();
+            Graphics2D g2d = (Graphics2D) bstrategy.getDrawGraphics();
+
+            g2d.drawImage(images.usedBackgroundImage, 0, 0, null);
+            g2d.drawImage(images.windmill, 300, 640, null);
+            g2d.drawImage(images.spinePipe, 0, 140, null);
+            g2d.drawImage(images.label, 0, 0, null);
+            g2d.drawImage(images.menu, 700, 0, null);
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.setFont(new Font("Arial", Font.BOLD, 20));
+
+            try {
+                g2d.drawString("Czas: " + gameData.playTime / 1000 + "s", 50, 55);
+                g2d.drawString("Czas dmuchania: " + gameData.clickingTime / 1000 + "s", 200, 55);
+                g2d.drawString("Punkty: " + gameData.points, 500, 55);
+            } catch (Exception e) {
+                g2d.drawString("Czas: " + 0 / 1000 + "s", 50, 55);
+                g2d.drawString("Czas dmuchania: " + 0 / 1000 + "s", 200, 55);
+                g2d.drawString("Punkty: " + 0, 500, 55);
             }
-            else
-            {
-                g2d.drawString("Wpisz imie:"+zapis.imie , 250, 430);
-                g2d.drawString("Zapisz " , 350, 500);
+            g2d.drawImage(images.usedCloud, cloud.getPositionX(), cloud.getPositionY(), null);
+
+            if (gameData.pause == true) {
+                g2d.drawImage(images.cloudOnPause, 150, 100, null);
+                g2d.setFont(new Font("Arial", Font.BOLD, 50));
+                g2d.drawString("Wznów", 400, 256);
+                g2d.drawString("Nowa gra", 400, 356);
+                g2d.drawString("Zakoncz", 400, 456);
             }
+
+            if (gameData.endGame == true) {
+                g2d.drawImage(images.cloudOnPause, 50, 100, null);
+                g2d.drawImage(images.cloudOnPause, 250, 100, null);
+                g2d.setFont(new Font("Arial", Font.BOLD, 50));
+                g2d.drawString("Punkty: " + gameData.points, 250, 220);
+                g2d.drawString("Czas dmuchania: " + gameData.clickingTime / 1000 + "s", 250, 290);
+                g2d.drawString("Czas gry: " + gameData.playTime / 1000 + "s", 250, 360);
+
+                if (gameData.saveScore == false) {
+                    g2d.drawString("Wyjdz  Nowa gra", 300, 506);
+                    g2d.drawString("Zapisz wynik ", 250, 430);
+                } else {
+                    g2d.drawString("Wpisz imie:" + saver.name, 250, 430);
+                    g2d.drawString("Zapisz ", 350, 500);
+                }
+            }
+            g2d.setFont(new Font("Arial", Font.BOLD, 20));
+
+            g2d.dispose();
+            bstrategy.show();
+
+        } catch (Exception e) {
+
+            //e.printStackTrace();
         }
-        g2d.setFont(new Font("Arial",Font.BOLD,20));
-        
-        g2d.dispose();
-        bstrategy.show();
-        
-        }
-        catch(Exception e)
-        {}
     }
-    
+
 }//koniec klasy Chmurki

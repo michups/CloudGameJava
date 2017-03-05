@@ -1,120 +1,112 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package chmurki;
 
 /**
  *
  * @author Mich
  */
-public class DaneGry {
+public class GameData {
+
     /**
-     *klikniecia brane pod uwage, co 0.5s jest wpisywana wartosc klikniecia
+     * counted clicks after 0.5s
      */
-    int klikniecia_po_czasie=0;
+    int countedClicks = 0;
     /**
-     * zliczane klikniecia, zerowane co 0.5s 
+     * Current clicks, resetting after every 0.5s
      */
-    int klikniecia =0;
-    int poziom =1;
-    int punkty =0;
-    int zniszczone_chmurki=0;
-    int spadanie_chmurki=0;
+    int currentClickingTime = 0;
+    int level = 1;
+    int points = 0;
+    int destroyedClouds = 0;
+    int fallingCloudLevel = 0;
     /**
-     * wartosc nastepnego czasu, w ktorym nastapi zliczenie (pol sekundy pozniej niz 
-     * czas obecny)
+     * set the time by the clicks will be counted
      */
-    long nastepna_sekunda = System.currentTimeMillis() + 500;
+    long nextHalfSecond = System.currentTimeMillis() + 500;
     /**
-     * zmienna zapamietujaca czas ostatniego dmuchania
-     * potrzebna przy obliczaniu czasu dmuchania
+     * Clicking time while halfsecond period before
      */
-    long ostatnie_dmuchanie=0;
+    long lastClickingTime = 0;
     /**
-     * zmienna zapamietujaca czas ostatniego dmuchania
-     * potrzebna przy obliczaniu calkowitego czasu gry
+     * counted last play time
      */
-    long ostatni_czas=System.currentTimeMillis();
-    long czas_gry =0;
-    long czas_dmuchania=0;
-    long obecny_czas ;
-    
-    /**
-     * zmienna oznaczajaca wlaczenie pauzy (true - wlaczona)
-     */
-    boolean pauza = false;
-    /**
-     * zmienna oznaczajaca zakonczenie gry (true - zakoncz gre)
-     */
-    boolean zakoncz = false;
-    /**
-     * zmienna oznaczajaca zapisywanie wyniku(true - umozliwia zapisanie)
-     */
-    boolean zapiszwynik = false;
-    /**
-     * zmienna oznaczajaca wyjscie z programu
-     */
-    boolean wyjdz = false;
-    public boolean whilePlay()
-    {
-        return (pauza==false && zakoncz==false);
+    long lastPlayTime = System.currentTimeMillis();
+    long playTime = 0;
+    long clickingTime = 0;
+    long currentTime;
+
+    boolean pause = false;
+    boolean endGame = false;
+    boolean saveScore = false;
+    boolean exit = false;
+
+    public boolean whilePlay() {
+        return (pause == false && endGame == false);
     }
-    
-    public void fallingPanalty()
-    {
-        if(spadanie_chmurki>=10){
-            spadanie_chmurki=0;
-            punkty--;
+
+    public void fallingPanalty() {
+        if (fallingCloudLevel >= 10) {
+            fallingCloudLevel = 0;
+            points--;
         }
     }
-    
-    public boolean checkRightClickingSpeed(int cloudPositionY, int cloudType)
-    {
-        if(cloudType==1){
-                    
-            if(klikniecia_po_czasie<=1 & klikniecia_po_czasie>0)
-                return false;  
 
-            if((klikniecia_po_czasie>1 || klikniecia_po_czasie<=0)& cloudPositionY<700){ 
+    public boolean checkRightClickingSpeed(int cloudPositionY, int cloudType) {
+        if (cloudType == 1) {
 
-                if(punkty>0)
-                    spadanie_chmurki++;
-                    return true;
+            if (countedClicks <= 1 & countedClicks > 0) {
+                return false;
+            }
+
+            if ((countedClicks > 1 || countedClicks <= 0) & cloudPositionY < 700) {
+
+                if (points > 0) {
+                    fallingCloudLevel++;
+                }
+                return true;
             }
         }
-                
-        if(cloudType==2){
-            if(klikniecia_po_czasie<=3 & klikniecia_po_czasie>1)
-               return false;  
-            if((klikniecia_po_czasie>3 || klikniecia_po_czasie<=1)& cloudPositionY<700){
-                if(punkty>0)
-                    spadanie_chmurki++;
-                    return true;  
+
+        if (cloudType == 2) {
+            if (countedClicks <= 3 & countedClicks > 1) {
+                return false;
+            }
+            if ((countedClicks > 3 || countedClicks <= 1) & cloudPositionY < 700) {
+                if (points > 0) {
+                    fallingCloudLevel++;
+                }
+                return true;
             }
         }
-        if(cloudType==3){
-            if(klikniecia_po_czasie<=5 & klikniecia_po_czasie>3)
-                return false;  
+        if (cloudType == 3) {
+            if (countedClicks <= 5 & countedClicks > 3) {
+                return false;
+            }
 
-            if((klikniecia_po_czasie>5 || klikniecia_po_czasie<=3)& cloudPositionY<700){
-                if(punkty>0)
-                   spadanie_chmurki++;
-                   return true;  
+            if ((countedClicks > 5 || countedClicks <= 3) & cloudPositionY < 700) {
+                if (points > 0) {
+                    fallingCloudLevel++;
+                }
+                return true;
             }
         }
         return true;
     }
-    public void gameOver(int cloudPosY)
-    {
-        if(cloudPosY>550){
-            zakoncz=true;
-            pauza=true;
+
+    public void gameOver(int cloudPosY) {
+        if (cloudPosY > 550) {
+            endGame = true;
+            pause = true;
         }
     }
-    public DaneGry()
-    {
-        
+
+    public void checkIfWinGame() {
+        if (destroyedClouds >= 60) {
+            endGame = true;
+            pause = true;
+        }
+    }
+
+    public GameData() {
+
     }
 }

@@ -8,55 +8,55 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
 /**
- *klasa sluzaca do zapisywania rozgrywki
+ * Class for saving scores
+ *
  * @author Michal
  */
-public class Zapis {
+public class Saver {
 
-    public int punkty;
-    public long czas_gry;
-    public long czas_dmuchania;
-    String imie="Adam";
-    
+    public int points;
+    public long gameTime;
+    public long clickingTime;
+    String name = "Adam";
+
     /**
-     *wpisanie danycg gry do klasy Zapis
-     * @param punkty1 zdobyte punkty
-     * @param czas_gry1 czas gry
-     * @param czas_dmuchania1 czas dmuchania
+     * Setter of game data
+     *
+     * @param pointsInput gained points
+     * @param gameTimeInput play time
+     * @param clickingTimeInput clicking time
      */
-    public void  wpisanieDanych(int punkty1, long czas_gry1, long czas_dmuchania1){
-        punkty=punkty1;
-        czas_gry=czas_gry1;
-        czas_dmuchania=czas_dmuchania1;
-        
+    public void setGameData(int pointsInput, long gameTimeInput, long clickingTimeInput) {
+        points = pointsInput;
+        gameTime = gameTimeInput;
+        clickingTime = clickingTimeInput;
+
     }
 
     /**
-     *metoda zapisujaca uzyskany wynik do pliku tekstowego wyniki.txt
-     * zapisuje kolejno:
-     * czas gry, czas dmuchania, imie, data, punkty 
+     * method saving the score to the text file scores.txt save in order: play
+     * time, clicking time, name, date, points
+     *
      */
-    public void zapiszWynik(){
-        
-        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("wyniki.txt", true)))){
+    public void saveScore() {
+
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("scores.txt", true)))) {
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd;HH:mm:ss");
             Date date = new Date();
-            out.println(czas_gry/1000+";"+czas_dmuchania/1000+";"+imie+";"+dateFormat.format(date)+";"+punkty+";");
-        }catch (IOException e) {
-                System.err.println(e.getMessage());
+            out.println(gameTime / 1000 + ";" + clickingTime / 1000 + ";" + name + ";" + dateFormat.format(date) + ";" + points + ";");
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
-        
+
     }
 
     /**
-     *matoda wprowadzajaca domyslne wartosci stanu gry
+     * method which resets name, game time and clicking time
      */
-    public void domyslne(){
-        imie="Adam";
-        czas_gry=0;
-        czas_dmuchania=0;
+    public void setDefoultGameData() {
+        name = "Adam";
+        gameTime = 0;
+        clickingTime = 0;
     }
-    
-}//koniec klasy Zapis
+}

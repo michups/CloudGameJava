@@ -6,32 +6,48 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
 /**
- *klasa sluzaca do wczytania i odtwarzania dzwiekow
+ * class which load and play sounds
+ *
  * @author Michal
  */
-public class Odtwarzacz {
-    File dzwiek1= new File("materialy/stuk.wav");
-    File dzwiek2= new File("materialy/balon_z_woda.wav");
-    File plik_dzwiekowy ;
-    
-    /**
-     *Metoda odtwarzania plików dźwiękowych
-     * @param numer_pliku numer odtworzonego pliku (1-stukniecie, 2-pekniecie balona)
-     */
-    public void odtworz(int numer_pliku){
-        if (numer_pliku==1)
-            plik_dzwiekowy=dzwiek1;
-        if (numer_pliku==2)
-            plik_dzwiekowy=dzwiek2;
-            try {                       
-                Clip klip = AudioSystem.getClip();
-                AudioInputStream strumien_wejsciowy = 
-                        AudioSystem.getAudioInputStream(plik_dzwiekowy);
-                klip.open(strumien_wejsciowy);
-                klip.start(); 
-            } 
-            catch (Exception ex){
-                System.err.println(ex.getMessage());
-            }
+public class MusicPlayer {
+
+    File sound1;
+    File sound2;
+    File choosenSound;
+
+    public MusicPlayer() {
+        try {
+            sound1 = new File(CloudGame.class.getResource("/materialy/stuk.wav").getPath());
+            sound2 = new File(CloudGame.class.getResource("/materialy/balon_z_woda.wav").getPath());
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+
     }
-}//koniec klasy Odtwarzacz
+
+    /**
+     * Method which play choosen sound
+     *
+     * @param numberOfChoosenSound number of choosen sound (1-knock, 2-exploding
+     * baloon)
+     */
+    public void playSound(int numberOfChoosenSound) {
+        if (numberOfChoosenSound == 1) {
+            choosenSound = sound1;
+        }
+        if (numberOfChoosenSound == 2) {
+            choosenSound = sound2;
+        }
+        try {
+            Clip klip = AudioSystem.getClip();
+            AudioInputStream strumien_wejsciowy
+                    = AudioSystem.getAudioInputStream(choosenSound);
+            klip.open(strumien_wejsciowy);
+            klip.start();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+}
